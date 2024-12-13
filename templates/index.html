@@ -1,4 +1,57 @@
 <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zero's Chatbot</title>
+</head>
+<body>
+    <h1>Welcome to Zero's Chatbot!</h1>
+    <p>Type a message to talk to Zero:</p>
+
+    <form id="chat-form">
+        <input type="text" id="user-message" placeholder="Say something to Zero..." required>
+        <button type="submit">Send</button>
+    </form>
+
+    <div id="chat-response"></div>
+
+    <script>
+        document.getElementById('chat-form').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            
+            const message = document.getElementById('user-message').value;
+            
+            if (!message) return;
+
+            // Send the message to the backend (Flask)
+            const response = await fetch('/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: new URLSearchParams({
+                    message: message
+                })
+            });
+
+            const data = await response.json();
+
+            // Display the response
+            const chatResponse = document.getElementById('chat-response');
+            if (data.response) {
+                chatResponse.innerHTML = `<p><strong>Zero:</strong> ${data.response}</p>`;
+            } else {
+                chatResponse.innerHTML = `<p><strong>Error:</strong> ${data.error}</p>`;
+            }
+
+            // Clear input field
+            document.getElementById('user-message').value = '';
+        });
+    </script>
+</body>
+</html>
+<!DOCTYPE html>
 <html>
 <head>
     <title>Chat with Zero</title>
