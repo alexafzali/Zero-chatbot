@@ -2,17 +2,18 @@ import os
 from flask import Flask, request, jsonify
 import openai
 
+# Initialize Flask app
 app = Flask(__name__)
 
 # Set up your OpenAI API key (replace with your actual key, or load from environment variables for security)
-openai.api_key = "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"
+openai.api_key = os.getenv("OPENAI_API_KEY", "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")  # Optionally use environment variables for security
 
-# Home route
+# Home route (for testing that the app is working)
 @app.route('/')
 def home():
     return "Welcome to Zero's Chatbot!"
 
-# Define the route for the chatbot
+# Chatbot route that will handle user input
 @app.route('/chat', methods=['POST'])
 def chat():
     user_message = request.json.get('message')
@@ -23,9 +24,9 @@ def chat():
     try:
         # Request to the OpenAI API
         response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",  # or gpt-4 if you have access
+            model="gpt-3.5-turbo",  # or "gpt-4" if you have access
             messages=[
-                {"role": "system", "content": "You are a helpful chatbot."},
+                {"role": "system", "content": "You are Zero, a blue heeler and a chatbot."},
                 {"role": "user", "content": user_message}
             ]
         )
@@ -40,6 +41,7 @@ def chat():
 
 # Main entry point for Flask app
 if __name__ == "__main__":
+    # Running the app on host 0.0.0.0, and getting the PORT from the environment variable (Render will set it)
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
 
 
