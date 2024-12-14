@@ -4,93 +4,77 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Zero's Chatbot</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        #chat-box {
+            border: 1px solid #ccc;
+            padding: 10px;
+            max-width: 600px;
+            margin: 20px auto;
+            height: 300px;
+            overflow-y: scroll;
+            background-color: #f9f9f9;
+        }
+        .message {
+            margin: 5px 0;
+        }
+        .user {
+            color: blue;
+        }
+        .zero {
+            color: green;
+        }
+    </style>
 </head>
 <body>
     <h1>Welcome to Zero's Chatbot!</h1>
-    <p>Type a message to talk to Zero:</p>
-
+    <div id="chat-box"></div>
     <form id="chat-form">
-        <input type="text" id="user-message" placeholder="Say something to Zero..." required>
+        <input type="text" id="user-message" name="message" placeholder="Type your message..." required>
         <button type="submit">Send</button>
     </form>
-
-    <div id="chat-response"></div>
-
     <script>
-        document.getElementById('chat-form').addEventListener('submit', async function(event) {
+        document.getElementById("chat-form").addEventListener("submit", async function(event) {
             event.preventDefault();
-            
-            const message = document.getElementById('user-message').value;
-            
-            if (!message) return;
 
-            // Send the message to the backend (Flask)
-            const response = await fetch('/chat', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: new URLSearchParams({
-                    message: message
-                })
-            });
+            // Get the user's message
+            const userMessage = document.getElementById("user-message").value;
 
-            const data = await response.json();
+            // Append the user's message to the chat box
+            const chatBox = document.getElementById("chat-box");
+            const userMessageDiv = document.createElement("div");
+            userMessageDiv.classList.add("message", "user");
+            userMessageDiv.textContent = `You: ${userMessage}`;
+            chatBox.appendChild(userMessageDiv);
 
-            // Display the response
-            const chatResponse = document.getElementById('chat-response');
-            if (data.response) {
-                chatResponse.innerHTML = `<p><strong>Zero:</strong> ${data.response}</p>`;
-            } else {
-                chatResponse.innerHTML = `<p><strong>Error:</strong> ${data.error}</p>`;
+            // Send the message to the server
+            try {
+                const response = await fetch("/chat", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded",
+                    },
+                    body: `message=${encodeURIComponent(userMessage)}`,
+                });
+
+                const data = await response.json();
+                const zeroMessageDiv = document.createElement("div");
+                zeroMessageDiv.classList.add("message", "zero");
+                zeroMessageDiv.textContent = `Zero: ${data.response}`;
+                chatBox.appendChild(zeroMessageDiv);
+
+                // Scroll to the bottom of the chat box
+                chatBox.scrollTop = chatBox.scrollHeight;
+            } catch (error) {
+                console.error("Error:", error);
             }
 
-            // Clear input field
-            document.getElementById('user-message').value = '';
+            // Clear the input field
+            document.getElementById("user-message").value = "";
         });
     </script>
 </body>
 </html>
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Chat with Zero</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        #chat-box { border: 1px solid #ccc; padding: 10px; height: 300px; overflow-y: scroll; margin-bottom: 10px; }
-        .message { margin: 5px 0; }
-        .user { color: blue; }
-        .ai { color: green; }
-    </style>
-</head>
-<body>
-    <h1>Chat with Zero 🐾</h1>
-    <div id="chat-box"></div>
-    <input type="text" id="user-input" placeholder="Type your message..." style="width: 80%;">
-    <button onclick="sendMessage()">Send</button>
-
-    <script>
-        async function sendMessage() {
-            const userInput = document.getElementById("user-input").value;
-            const chatBox = document.getElementById("chat-box");
-            chatBox.innerHTML += `<div class="message user"><strong>You:</strong> ${userInput}</div>`;
-            document.getElementById("user-input").value = "";
-
-            const response = await fetch("/chat", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ message: userInput })
-            });
-            const data = await response.json();
-
-            if (data.response) {
-                chatBox.innerHTML += `<div class="message ai"><strong>Zero:</strong> ${data.response}</div>`;
-            } else {
-                chatBox.innerHTML += `<div class="message ai"><strong>Error:</strong> ${data.error}</div>`;
-            }
-            chatBox.scrollTop = chatBox.scrollHeight;
-        }
-    </script>
-</body>
-</html>
-
